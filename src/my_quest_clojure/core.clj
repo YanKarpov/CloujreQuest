@@ -1,24 +1,13 @@
 (ns my-quest-clojure.core
-  (:require [clojure.string :as str]) ;; подключаем str
-  (:import [java.io BufferedReader InputStreamReader]) ;; импорт классов Java
-  (:gen-class)) ;; генерируем Java класс для запуска
+  (:require [clojure.string :as str])
+  (:import [java.io BufferedReader InputStreamReader])
+  (:gen-class))
 
 (defrecord Player [scene inventory])
-;; Игрок:
-;; - scene: номер текущей сцены
-;; - inventory: множество предметов игрока
 
 (defrecord Scene [description actions])
-;; Сцена:
-;; - description: текст описания сцены
-;; - actions: список возможных действий в этой сцене
 
 (defrecord Action [description required-item gives-item next-scene])
-;; Действие:
-;; - description: текст, что делает игрок
-;; - required-item: предмет, который должен быть у игрока для этого действия
-;; - gives-item: предмет, который игрок получит после действия
-;; - next-scene: номер следующей сцены после действия
 
 (def game-scenario
   {1 (->Scene
@@ -57,24 +46,28 @@
 
 (def player (atom (->Player 1 #{})))
 
-;; Выводит описание текущей сцены и доступные игроку действия
 (defn print-current-scene [player scenario]
   (let [{:keys [scene inventory]} player
         {:keys [description actions]} (get scenario scene)
-        available-actions (filter #(or (nil? (:required-item %))
-                                       (contains? inventory (:required-item %)))
+        available-actions (filter #(and
+                                    (or (nil? (:required-item %))
+                                        (contains? inventory (:required-item %)))
+                                    ;; не показывать действие, если даёт предмет, который уже есть
+                                    (not (and (:gives-item %)
+                                              (contains? inventory (:gives-item %)))))
                                   actions)]
     (println "\n---")
     (println description)
     (if (empty? available-actions)
-      (println "Нет доступных действий. Игра окончена.")
+      (do
+        (println "Нет доступных действий. Игра окончена.")
+        nil)
       (do
         (println "\nДоступные действия:")
         (doseq [[idx action] (map-indexed vector available-actions)]
           (println (str (inc idx) ". " (:description action))))
         available-actions))))
 
-;; Считывает выбор пользователя из консоли
 (defn read-player-choice []
   (print "\nВаш выбор: ")
   (flush)
@@ -84,12 +77,14 @@
       (Integer/parseInt (str/trim input))
       (catch Exception _ 0))))
 
-;; Обновляет состояние игрока в зависимости от выбранного действия
 (defn update-player-state [player scenario choice]
   (let [{:keys [scene inventory]} player
         {:keys [actions]} (get scenario scene)
-        available-actions (filter #(or (nil? (:required-item %))
-                                       (contains? inventory (:required-item %)))
+        available-actions (filter #(and
+                                    (or (nil? (:required-item %))
+                                        (contains? inventory (:required-item %)))
+                                    (not (and (:gives-item %)
+                                              (contains? inventory (:gives-item %)))))
                                   actions)
         idx (dec choice)
         action (nth available-actions idx nil)]
@@ -107,9 +102,16 @@
 
 (defn game-loop []
   (loop []
-    (let [actions (print-current-scene @player game-scenario)]
-      (if (or (nil? actions) (empty? actions))
+    (let [actions (print-current-scene @player game-scenario)
+          {:keys [scene]} @player]
+      (cond
+        (or (nil? actions) (empty? actions))
         (println "\nСпасибо за игру!")
+
+        (#{5 7} scene)
+        (println "\nПоздравляем! Игра окончена.")
+
+        :else
         (do
           (let [choice (read-player-choice)]
             (swap! player update-player-state game-scenario choice)
