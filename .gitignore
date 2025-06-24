@@ -1,40 +1,73 @@
-g/target
-/classes
-/checkouts
+# Clojure / ClojureScript build outputs
+/target/
+/out/
+/resources/public/js/compiled/
 
+# Leiningen files
 /.lein-*
 /.nrepl-port
 /.prepl-port
 
+# Maven files
 pom.xml
 pom.xml.asc
 
+# Java class/jar files
 *.class
 *.jar
 
+# IDE/editor files
 .idea/
 *.iml
 *.ipr
 *.iws
-*.swp
-*.swo
-*.DS_Store
 
 .vscode/
 
+# Vim swap files
+*.swp
+*.swo
+
+# macOS system files
+.DS_Store
+
+# Temporary and backup files
 *~
 .#*
 nrepl-port
 
+# Mercurial
 .hg/
 .hgignore
 
+# Leiningen profiles
 profiles.clj
 
+# Logs
 /logs/
 *.log
 
+# Backup, temp, patch files
 *.bak
 *.tmp
 *.orig
 *.rej
+
+# Shadow CLJS build outputs (если используешь shadow-cljs)
+/build/
+/node_modules/
+/dist/
+.shadow-cljs/
+
+# figwheel main output (если используешь figwheel-main)
+/target/
+/resources/public/js/main.js
+/resources/public/js/main.js.map
+
+# cljsbuild output (если используешь cljsbuild)
+/out/
+
+# npm/yarn artifacts (если есть)
+node_modules/
+yarn.lock
+package-lock.json
