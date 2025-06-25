@@ -13,9 +13,13 @@
 
 ;; Безопасный парсер int из строки
 (defn safe-parse-int [s]
-  (try
-    (Integer/parseInt s)
-    (catch Exception _ nil)))
+  (cond
+    (integer? s) s
+    (string? s) (try
+                  (Integer/parseInt s)
+                  (catch Exception _ nil))
+    :else nil))
+
 
 ;; Игровое состояние
 (defonce player-state (atom @player))
