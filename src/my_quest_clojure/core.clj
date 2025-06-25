@@ -56,17 +56,37 @@
                        :description (:description a)})
                     actions (range 1 (inc (count actions))))}))
 
+(defn safe-parse-int [s]
+  (try
+    (Integer/parseInt s)
+    (catch Exception _
+      (println "safe-parse-int: failed to parse" s)
+      nil)))
+
 (defn update-player-state [player scenario choice]
+  (println "update-player-state called with choice:" choice)
   (let [{:keys [scene inventory]} player
         actions (available-actions player scenario)
-        idx (dec choice)
-        action (nth actions idx nil)]
-    (if (and action
-             (or (nil? (:required-item action))
-                 (contains? inventory (:required-item action))))
-      (let [new-inv (if (:gives-item action)
-                      (conj inventory (:gives-item action))
-                      inventory)
-            new-scene (:next-scene action)]
-        (->Player new-scene new-inv))
-      player)))
+        choice-num (if (string? choice)
+                     (do
+                       (println "Parsing string choice:" choice)
+                       (safe-parse-int choice))
+                     choice)]
+    (println "Parsed choice-num:" choice-num)
+    (let [idx (when (number? choice-num)
+                (dec choice-num))]
+      (println "Calculated idx:" idx)
+      (let [action (nth actions idx nil)]
+        (println "Selected action:" action)
+        (if (and action
+                 (or (nil? (:required-item action))
+                     (contains? inventory (:required-item action))))
+          (let [new-inv (if (:gives-item action)
+                          (conj inventory (:gives-item action))
+                          inventory)
+                new-scene (:next-scene action)]
+            (println "Updating player state to scene:" new-scene "with inventory:" new-inv)
+            (->Player new-scene new-inv))
+          (do
+            (println "No valid action found or required item missing, returning original player state")
+            player))))))

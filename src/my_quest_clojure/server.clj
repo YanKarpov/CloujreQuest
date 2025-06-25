@@ -6,8 +6,16 @@
    [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
    [ring.middleware.params :refer [wrap-params]]
    [ring.util.response :refer [response resource-response content-type]]
-   [my-quest-clojure.core :refer [game-scenario player update-player-state]])
+   [my-quest-clojure.core :refer [game-scenario player update-player-state]] 
+   [clojure.pprint :refer [pprint]])
+  
   (:gen-class))
+
+;; Безопасный парсер int из строки
+(defn safe-parse-int [s]
+  (try
+    (Integer/parseInt s)
+    (catch Exception _ nil)))
 
 ;; Игровое состояние
 (defonce player-state (atom @player))
@@ -41,10 +49,18 @@
     (response (scene-data)))
 
   ;; Обработать выбор игрока
-  (POST "/step" {body :body-params}
+  (POST "/step" {body :body-params headers :headers}
+    (println "=== /step Request ===")
+    (println "Headers:\n" (with-out-str (clojure.pprint/pprint headers)))
+    (println "Body params:\n" (with-out-str (clojure.pprint/pprint body)))
     (let [choice (some-> body :choice int)]
+      (println "Parsed choice:" choice)
       (swap! player-state update-player-state game-scenario choice)
+      (println "Updated player state:\n" (with-out-str (clojure.pprint/pprint @player-state)))
+      (println "=====================")
       (response (scene-data))))
+
+
 
   (route/resources "/")
 
@@ -52,9 +68,9 @@
 
 (def app
   (-> app-routes
-      wrap-json-body
-      wrap-json-response
-      wrap-params))
+      (wrap-json-body {:keywords? true}) 
+      wrap-params 
+      wrap-json-response))
 
 ;; Точка входа
 (defn -main []
