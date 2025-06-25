@@ -71,15 +71,22 @@
         (.addEventListener form "submit"
                            (fn [e]
                              (.preventDefault e)
-                             (let [choice (.. form -choice -value)]
-                               (go
-                                 (let [resp (<! (http/post "/step"
-                                                          {:json-params {:choice choice}}))
-                                       data (:body resp)]
-                                   (render-scene data))))))))))
+                             (let [checked-input (.querySelector form "input[name=choice]:checked")
+                                   choice (when checked-input (.-value checked-input))
+                                   choice-int (js/parseInt choice)]
+                               (js/console.log "Selected choice (int):" choice-int)
+                               (if choice
+                                 (go
+                                   (let [resp (<! (http/post "/step"
+                                                             {:json-params {:choice choice-int}}))
+                                         data (:body resp)]
+                                     (js/console.log "Response from server:"
+                                                     (js/JSON.stringify (clj->js data) nil 2))
+                                     (render-scene data)))
+                                 (js/alert "Пожалуйста, выберите вариант!")))))))))
 
 (defn ^:export start []
-  (inject-css) ;; вставляем стили при старте
+  (inject-css)
   (go
     (let [resp (<! (http/get "/scene" {:with-credentials? false}))
           data (:body resp)]

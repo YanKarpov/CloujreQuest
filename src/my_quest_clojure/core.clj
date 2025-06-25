@@ -48,18 +48,20 @@
 (defn scene-data [player scenario]
   (let [{:keys [scene]} player
         {:keys [description]} (get scenario scene)
-        actions (available-actions player scenario)]
+        actions (available-actions player scenario)
+        indexed-actions (mapv (fn [a idx]
+                                {:idx idx
+                                 :description (:description a)})
+                              actions (range 1 (inc (count actions))))]
+    (println "scene-data:" {:scene scene :actions indexed-actions})
     {:scene scene
      :description description
-     :actions (mapv (fn [a idx]
-                      {:idx idx
-                       :description (:description a)})
-                    actions (range 1 (inc (count actions))))}))
+     :actions indexed-actions}))
 
 (defn safe-parse-int [s]
   (try
     (Integer/parseInt s)
-    (catch Exception _
+    (catch Exception _ 
       (println "safe-parse-int: failed to parse" s)
       nil)))
 
@@ -75,18 +77,18 @@
     (println "Parsed choice-num:" choice-num)
     (let [idx (when (number? choice-num)
                 (dec choice-num))]
-      (println "Calculated idx:" idx)
-      (let [action (nth actions idx nil)]
-        (println "Selected action:" action)
-        (if (and action
-                 (or (nil? (:required-item action))
-                     (contains? inventory (:required-item action))))
+      (if (and (some? idx)
+               (>= idx 0)
+               (< idx (count actions)))
+        (let [action (nth actions idx)]
+          (println "Selected action:" action)
           (let [new-inv (if (:gives-item action)
                           (conj inventory (:gives-item action))
                           inventory)
                 new-scene (:next-scene action)]
             (println "Updating player state to scene:" new-scene "with inventory:" new-inv)
-            (->Player new-scene new-inv))
-          (do
-            (println "No valid action found or required item missing, returning original player state")
-            player))))))
+            (->Player new-scene new-inv)))
+        (do
+          (println "Invalid choice: index out of bounds or parse error. idx:" idx ", actions available:" (count actions))
+          player)))))
+

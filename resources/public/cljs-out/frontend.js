@@ -42219,71 +42219,79 @@ my_quest_clojure.frontend.render_scene = function(a) {
   a.appendChild(e);
   return e.addEventListener("submit", function(n) {
     n.preventDefault();
-    var p = e.choice.value, r = cljs.core.async.chan.call(null, 1);
-    cljs.core.async.impl.dispatch.run.call(null, function() {
-      var t = function() {
-        return function() {
-          var D = null, H = function() {
-            var Q = [null, null, null, null, null, null, null];
-            Q[0] = D;
-            Q[1] = 1;
-            return Q;
-          }, L = function(Q) {
-            for (;;) {
-              a: {
-                try {
-                  for (;;) {
-                    var M = Q, P = M[1];
-                    if (1 === P) {
-                      var W = [new cljs.core.Keyword(null, "json-params", "json-params", -1112693596)], q = [new cljs.core.Keyword(null, "choice", "choice", -1375170727)], v = [cljs.core.PersistentHashMap.fromArrays(q, [p])], w = cljs.core.PersistentHashMap.fromArrays(W, v), x = cljs_http.client.post.call(null, "/step", w);
-                      var y = cljs.core.async.impl.ioc_helpers.take_BANG_.call(null, M, 2, x);
-                    } else {
-                      if (2 === P) {
-                        var z = M[2], A = (new cljs.core.Keyword(null, "body", "body", -2049205669)).cljs$core$IFn$_invoke$arity$1(z), B = my_quest_clojure.frontend.render_scene.call(null, A);
-                        y = cljs.core.async.impl.ioc_helpers.return_chan.call(null, M, B);
+    n = e.querySelector("input[name\x3dchoice]:checked");
+    n = cljs.core.truth_(n) ? n.value : null;
+    var p = parseInt(n);
+    console.log("Selected choice (int):", p);
+    if (cljs.core.truth_(n)) {
+      var r = cljs.core.async.chan.call(null, 1);
+      cljs.core.async.impl.dispatch.run.call(null, function() {
+        var t = function() {
+          return function() {
+            var D = null, H = function() {
+              var Q = [null, null, null, null, null, null, null, null];
+              Q[0] = D;
+              Q[1] = 1;
+              return Q;
+            }, L = function(Q) {
+              for (;;) {
+                a: {
+                  try {
+                    for (;;) {
+                      var M = Q, P = M[1];
+                      if (1 === P) {
+                        var W = [new cljs.core.Keyword(null, "json-params", "json-params", -1112693596)], q = [new cljs.core.Keyword(null, "choice", "choice", -1375170727)], v = [cljs.core.PersistentHashMap.fromArrays(q, [p])], w = cljs.core.PersistentHashMap.fromArrays(W, v), x = cljs_http.client.post.call(null, "/step", w);
+                        var y = cljs.core.async.impl.ioc_helpers.take_BANG_.call(null, M, 2, x);
                       } else {
-                        y = null;
+                        if (2 === P) {
+                          var z = M[2], A = (new cljs.core.Keyword(null, "body", "body", -2049205669)).cljs$core$IFn$_invoke$arity$1(z), B = cljs.core.clj__GT_js.call(null, A), C = JSON.stringify(B, null, 2), E = console.log("Response from server:", C), F = my_quest_clojure.frontend.render_scene.call(null, A);
+                          M[7] = E;
+                          y = cljs.core.async.impl.ioc_helpers.return_chan.call(null, M, F);
+                        } else {
+                          y = null;
+                        }
+                      }
+                      if (!cljs.core.keyword_identical_QMARK_.call(null, y, new cljs.core.Keyword(null, "recur", "recur", -437573268))) {
+                        var G = y;
+                        break a;
                       }
                     }
-                    if (!cljs.core.keyword_identical_QMARK_.call(null, y, new cljs.core.Keyword(null, "recur", "recur", -437573268))) {
-                      var C = y;
-                      break a;
+                  } catch (I) {
+                    if (I instanceof Object) {
+                      Q[5] = I, cljs.core.async.impl.ioc_helpers.process_exception.call(null, Q), G = new cljs.core.Keyword(null, "recur", "recur", -437573268);
+                    } else {
+                      throw I;
                     }
                   }
-                } catch (E) {
-                  if (E instanceof Object) {
-                    Q[5] = E, cljs.core.async.impl.ioc_helpers.process_exception.call(null, Q), C = new cljs.core.Keyword(null, "recur", "recur", -437573268);
-                  } else {
-                    throw E;
-                  }
+                }
+                if (!cljs.core.keyword_identical_QMARK_.call(null, G, new cljs.core.Keyword(null, "recur", "recur", -437573268))) {
+                  return G;
                 }
               }
-              if (!cljs.core.keyword_identical_QMARK_.call(null, C, new cljs.core.Keyword(null, "recur", "recur", -437573268))) {
-                return C;
+            };
+            D = function(Q) {
+              switch(arguments.length) {
+                case 0:
+                  return H.call(this);
+                case 1:
+                  return L.call(this, Q);
               }
-            }
-          };
-          D = function(Q) {
-            switch(arguments.length) {
-              case 0:
-                return H.call(this);
-              case 1:
-                return L.call(this, Q);
-            }
-            throw Error("Invalid arity: " + arguments.length);
-          };
-          D.cljs$core$IFn$_invoke$arity$0 = H;
-          D.cljs$core$IFn$_invoke$arity$1 = L;
+              throw Error("Invalid arity: " + arguments.length);
+            };
+            D.cljs$core$IFn$_invoke$arity$0 = H;
+            D.cljs$core$IFn$_invoke$arity$1 = L;
+            return D;
+          }();
+        }(), u = function() {
+          var D = t.call(null);
+          D[6] = r;
           return D;
         }();
-      }(), u = function() {
-        var D = t.call(null);
-        D[6] = r;
-        return D;
-      }();
-      return cljs.core.async.impl.ioc_helpers.run_state_machine_wrapped.call(null, u);
-    });
-    return r;
+        return cljs.core.async.impl.ioc_helpers.run_state_machine_wrapped.call(null, u);
+      });
+      return r;
+    }
+    return alert("Пожалуйста, выберите вариант!");
   });
 };
 my_quest_clojure.frontend.start = function() {

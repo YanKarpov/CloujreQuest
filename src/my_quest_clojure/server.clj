@@ -32,10 +32,12 @@
                                   actions)]
     {:scene scene
      :description description
+     ;; Исправлено: mapv теперь получает две коллекции, разделённые пробелом
      :actions (mapv (fn [a idx]
                       {:idx idx
                        :description (:description a)})
-                    available-actions (range 1 (inc (count available-actions))))}))
+                    available-actions
+                    (range 1 (inc (count available-actions))))}))
 
 ;; Роуты приложения
 (defroutes app-routes
@@ -49,17 +51,21 @@
     (response (scene-data)))
 
   ;; Обработать выбор игрока
-  (POST "/step" {body :body-params headers :headers}
+  (POST "/step" {body :body headers :headers}
     (println "=== /step Request ===")
     (println "Headers:\n" (with-out-str (clojure.pprint/pprint headers)))
     (println "Body params:\n" (with-out-str (clojure.pprint/pprint body)))
-    (let [choice (some-> body :choice int)]
+    (let [choice (some-> body :choice safe-parse-int)]
       (println "Parsed choice:" choice)
-      (swap! player-state update-player-state game-scenario choice)
-      (println "Updated player state:\n" (with-out-str (clojure.pprint/pprint @player-state)))
-      (println "=====================")
-      (response (scene-data))))
-
+      (if (nil? choice)
+        (do
+          (println "Choice is nil or invalid, returning error.")
+          (response {:error "Invalid choice"}))
+        (do
+          (swap! player-state update-player-state game-scenario choice)
+          (println "Updated player state:\n" (with-out-str (clojure.pprint/pprint @player-state)))
+          (println "=====================")
+          (response (scene-data))))))
 
 
   (route/resources "/")
@@ -68,8 +74,8 @@
 
 (def app
   (-> app-routes
-      (wrap-json-body {:keywords? true}) 
-      wrap-params 
+      (wrap-json-body {:keywords? true})
+      wrap-params
       wrap-json-response))
 
 ;; Точка входа
